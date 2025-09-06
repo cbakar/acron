@@ -1,8 +1,83 @@
 
-import { ChevronDownIcon } from '@heroicons/react/16/solid'
-import { motion } from 'framer-motion'
+
+import { ChevronDownIcon } from '@heroicons/react/16/solid';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 export default function Contact() {
+      const [form, setForm] = useState({
+            firstName: '',
+            lastName: '',
+            company: '',
+            email: '',
+            country: 'US',
+            phone: '',
+            message: '',
+      });
+      const [loading, setLoading] = useState(false);
+      const [success, setSuccess] = useState(false);
+      const [error, setError] = useState('');
+
+      const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+            const { name, value, type } = e.target;
+            if (type === 'checkbox') {
+                  setForm((prev) => ({
+                        ...prev,
+                        [name]: (e.target as HTMLInputElement).checked,
+                  }));
+            } else {
+                  setForm((prev) => ({
+                        ...prev,
+                        [name]: value,
+                  }));
+            }
+      };
+
+      const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            setLoading(true);
+            setError('');
+            setSuccess(false);
+            try {
+                  const res = await fetch('/api/sendEmail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                              firstName: form.firstName,
+                              lastName: form.lastName,
+                              company: form.company,
+                              email: form.email,
+                              phone: form.phone,
+                              message: form.message,
+                        }),
+                  });
+                  let data = null;
+                  const text = await res.text();
+                  try {
+                        data = text ? JSON.parse(text) : null;
+                  } catch (e) {
+                        // ignore JSON parse error
+                  }
+                  if (!res.ok) {
+                        throw new Error((data && data.error) || 'Failed to send message');
+                  }
+                  setSuccess(true);
+                  setForm({
+                        firstName: '',
+                        lastName: '',
+                        company: '',
+                        email: '',
+                        country: 'US',
+                        phone: '',
+                        message: '',
+                  });
+            } catch (err: any) {
+                  setError(err.message || 'Something went wrong');
+            } finally {
+                  setLoading(false);
+            }
+      };
+
       return (
             <div className="isolate bg-white px-6 py-24 sm:py-32 lg:px-8 dark:bg-gray-900">
                   <div
@@ -38,8 +113,7 @@ export default function Contact() {
                         </motion.p>
                   </div>
                   <motion.form
-                        action="#"
-                        method="POST"
+                        onSubmit={handleSubmit}
                         className="mx-auto mt-16 max-w-xl sm:mt-20"
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -54,9 +128,11 @@ export default function Contact() {
                                     <div className="mt-2.5">
                                           <input
                                                 id="first-name"
-                                                name="first-name"
+                                                name="firstName"
                                                 type="text"
                                                 autoComplete="given-name"
+                                                value={form.firstName}
+                                                onChange={handleChange}
                                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                                           />
                                     </div>
@@ -68,9 +144,11 @@ export default function Contact() {
                                     <div className="mt-2.5">
                                           <input
                                                 id="last-name"
-                                                name="last-name"
+                                                name="lastName"
                                                 type="text"
                                                 autoComplete="family-name"
+                                                value={form.lastName}
+                                                onChange={handleChange}
                                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                                           />
                                     </div>
@@ -85,6 +163,8 @@ export default function Contact() {
                                                 name="company"
                                                 type="text"
                                                 autoComplete="organization"
+                                                value={form.company}
+                                                onChange={handleChange}
                                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                                           />
                                     </div>
@@ -99,6 +179,8 @@ export default function Contact() {
                                                 name="email"
                                                 type="email"
                                                 autoComplete="email"
+                                                value={form.email}
+                                                onChange={handleChange}
                                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                                           />
                                     </div>
@@ -115,11 +197,13 @@ export default function Contact() {
                                                             name="country"
                                                             autoComplete="country"
                                                             aria-label="Country"
+                                                            value={form.country}
+                                                            onChange={handleChange}
                                                             className="col-start-1 row-start-1 w-full appearance-none rounded-md py-2 pr-7 pl-3.5 text-base text-gray-500 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-transparent dark:text-gray-400 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                                                       >
-                                                            <option>US</option>
-                                                            <option>CA</option>
-                                                            <option>EU</option>
+                                                            <option value="US">US</option>
+                                                            <option value="CA">CA</option>
+                                                            <option value="EU">EU</option>
                                                       </select>
                                                       <ChevronDownIcon
                                                             aria-hidden="true"
@@ -128,9 +212,11 @@ export default function Contact() {
                                                 </div>
                                                 <input
                                                       id="phone-number"
-                                                      name="phone-number"
+                                                      name="phone"
                                                       type="text"
                                                       placeholder="123-456-7890"
+                                                      value={form.phone}
+                                                      onChange={handleChange}
                                                       className="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 dark:bg-transparent dark:text-white dark:placeholder:text-gray-500"
                                                 />
                                           </div>
@@ -145,40 +231,27 @@ export default function Contact() {
                                                 id="message"
                                                 name="message"
                                                 rows={4}
+                                                value={form.message}
+                                                onChange={handleChange}
                                                 className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                                                defaultValue={''}
                                           />
                                     </div>
-                              </div>
-                              <div className="flex gap-x-4 sm:col-span-2">
-                                    <div className="flex h-6 items-center">
-                                          <div className="group relative inline-flex w-8 shrink-0 rounded-full bg-gray-200 p-px inset-ring inset-ring-gray-900/5 outline-offset-2 outline-indigo-600 transition-colors duration-200 ease-in-out has-checked:bg-indigo-600 has-focus-visible:outline-2 dark:bg-white/5 dark:inset-ring-white/10 dark:outline-indigo-500 dark:has-checked:bg-indigo-500">
-                                                <span className="size-4 rounded-full bg-white shadow-xs ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out group-has-checked:translate-x-3.5" />
-                                                <input
-                                                      id="agree-to-policies"
-                                                      name="agree-to-policies"
-                                                      type="checkbox"
-                                                      aria-label="Agree to policies"
-                                                      className="absolute inset-0 appearance-none focus:outline-hidden"
-                                                />
-                                          </div>
-                                    </div>
-                                    <label htmlFor="agree-to-policies" className="text-sm/6 text-gray-600 dark:text-gray-400">
-                                          By selecting this, you agree to our{' '}
-                                          <a href="#" className="font-semibold whitespace-nowrap text-indigo-600 dark:text-indigo-400">
-                                                privacy policy
-                                          </a>
-                                          .
-                                    </label>
                               </div>
                         </div>
                         <div className="mt-10">
                               <button
                                     type="submit"
-                                    className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+                                    disabled={loading}
+                                    className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 disabled:opacity-60"
                               >
-                                    Send Message
+                                    {loading ? 'Sending...' : 'Send Message'}
                               </button>
+                              {success && (
+                                    <p className="mt-4 text-green-600 dark:text-green-400 text-center">Message sent successfully!</p>
+                              )}
+                              {error && (
+                                    <p className="mt-4 text-red-600 dark:text-red-400 text-center">{error}</p>
+                              )}
                         </div>
                   </motion.form>
             </div>

@@ -3,11 +3,15 @@ const express = require("express");
 const cors = require("cors");
 const { Resend } = require("resend");
 
+const path = require("path");
 const app = express();
 const port = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the Vite build
+app.use(express.static(path.join(__dirname, "../dist")));
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,7 +21,7 @@ app.post("/api/sendEmail", async (req, res) => {
     const { data, error } = await resend.emails.send({
       from: "Acorn <onboarding@resend.dev>",
       to: ["cembakar@gmail.com"], // Change to your real destination
-      subject: `Contact Form Submission from ${firstName} ${lastName}`,
+      subject: `Contact Form Acorn Media Group Website`,
       html: `<strong>Company:</strong> ${company}<br/><strong>Email:</strong> ${email}<br/><strong>Phone:</strong> ${phone}<br/><strong>Message:</strong> ${message}`,
     });
     if (error) {
@@ -33,6 +37,12 @@ app.post("/api/sendEmail", async (req, res) => {
       .status(500)
       .json({ error: err && err.message ? err.message : JSON.stringify(err) });
   }
+});
+
+// SPA fallback: serve index.html for all non-API routes
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api/")) return res.status(404).send("Not Found");
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
 app.listen(port, () => {

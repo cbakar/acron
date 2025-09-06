@@ -1,7 +1,4 @@
-
-
 import './App.css'
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import ImgAcornMedia from './assets/images/am.png'
 import ImgHeroSide from './assets/images/hero-side.png'
 import { motion } from 'framer-motion'

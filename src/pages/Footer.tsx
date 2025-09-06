@@ -2,12 +2,13 @@
 'use client'
 import { motion } from 'framer-motion'
 
+type SocialIconProps = React.SVGProps<SVGSVGElement>;
 const navigation = {
       social: [
             {
                   name: 'Instagram',
                   href: 'https://www.instagram.com/acornmediagroup',
-                  icon: (props) => (
+                  icon: (props: SocialIconProps) => (
                         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
                               <path
                                     fillRule="evenodd"
